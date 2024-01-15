@@ -11,7 +11,6 @@ class PieceTable:
     
     def insert(self, index, text):
         """Insert text at the index"""
-        """
         # the newly added text begins at add_buffer_index within add buffer
         add_buffer_index = len(self.add_buffer)
         self.add_buffer += text
@@ -58,38 +57,7 @@ class PieceTable:
                 index -= piece.length
 
         self.pieces = new_pieces
-        """
-        add_buffer_index = len(self.add_buffer)
-        self.add_buffer += text
 
-        new_pieces = []
-        text_inserted = False
-
-        for piece in self.pieces:
-            if not text_inserted:
-                if index <= piece.start + piece.length:
-                    split_index = index - piece.start
-                    if split_index > 0:
-                        new_pieces.append(Piece(piece.start, split_index, piece.source))
-
-                    new_pieces.append(Piece(add_buffer_index, len(text), "add"))
-                    text_inserted = True
-
-                    remaining_length = piece.length - split_index
-                    if remaining_length > 0:
-                        new_start = piece.start + split_index
-                        new_pieces.append(Piece(new_start, remaining_length, piece.source))
-                else:
-                    new_pieces.append(piece)
-                    index -= (piece.start + piece.length)
-            else:
-                # Adjust the start position of subsequent pieces in the add_buffer
-                if piece.source == "add":
-                    new_pieces.append(Piece(piece.start + len(text), piece.length, piece.source))
-                else:
-                    new_pieces.append(piece)
-
-        self.pieces = new_pieces
         print("After insertion:")
         print("Original Buffer:", self.original_buffer)
         print("Add Buffer:", self.add_buffer)
