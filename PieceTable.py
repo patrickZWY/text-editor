@@ -11,7 +11,7 @@ class PieceTable:
 
 
     def insert(self, index, text):
-
+        """Insert a text at index"""
         # the newly added text begins at add_buffer_index within add buffer
         add_buffer_index = len(self.add_buffer)
         self.add_buffer += text
@@ -24,21 +24,9 @@ class PieceTable:
         # iterate through every piece in the list of pieces
         for piece in self.pieces:
 
-            # SOMETHING HERE IS WRONG WHEN ADD BUFFER IS NOT SUPPOSED TO BE SPLIT, IT WAS SPLIT
-            # FOR MANY, MANY WAS RIGHT (3, 5, 'add') BUT IT WAS SPLIT WHICH SHOULDN'T HAPPEN
-            # essentially the problem was that checking index <= start + length will lead to
-            # checking not the ending of a line 
             # check if current piece is affected by insertion
-            # this is actually ok, bc it does check that many is affected
-            # the problem is what next?
-            """
-            piece.start + piece.length doesn't check for the end of a piece, 
-            in fact, every time the length will be decremented by a certain amount, 
-            and when it goes to check for next piece, the remaining amount will be less
-            than piece start and length together, therefore making program think that we
-            are dealing with inserting in the middle instead of inserting in the end
-            """
             if not text_inserted and index <= piece.length + piece.start:
+                # if inserting at the ending, simply append piece and the new piece
                 if index != 0 and index == piece.length:
                     new_pieces.append(piece)
                     new_pieces.append(Piece(add_buffer_index, len(text), "add"))
@@ -49,11 +37,6 @@ class PieceTable:
                 split_index = index - piece.start
                 # if we are not inserting from the beginning
                 if split_index > 0:
-                # BUT WHERE IS THE CHECK FOR ENDING, ENDING IS DIFF FROM MIDDLE???
-                # when the sample is small, like only one original, it is easy to add
-                # to ending, but when multiple adds are present, using split_index is no
-                # longer feasible, partly due to the inaccurate measuring of index
-                # when inserting " friends." it split many which should not have happened
                     
                 # Add the first part of the split piece
                 # we need to split the current piece at the locus of insertion
@@ -86,12 +69,53 @@ class PieceTable:
         self.pieces = new_pieces
 
 
+    def delete(self, start : int, length : int):
+        """Delete a text at index"""
+        print(f"Before deletion: {self.form_text()}")
+
+        new_pieces = []
+        remaining_length_to_delete = length
+        current = 0
+
+        for piece in self.pieces:
+            # if delete by zero length
+            if remaining_length_to_delete <= 0:
+                new_pieces.append(piece)
+                continue
+            
+
+            # deletion length longer than length of the piece means no deletion
+            if current + piece.length < start:
+                new_pieces.append(piece)
+            else:
+                # if deletion in the middle
+                # something goes wrong here because it doesn't detect split
+                # in the middle, at this point, eff_start is zero, and zero
+                # won't pass the first condition, it should be 1 to form a
+                # new piece but here it is neglected
+                effective_start = max(start - current, 0)
+                effective_end = min(effective_start + remaining_length_to_delete, piece.length)
+                if effective_start > 0:
+                    new_pieces.append(Piece(piece.start, effective_start, piece.source))
+                if effective_end < piece.length:
+                    new_start = piece.start + effective_end
+                    new_length = piece.length - effective_end
+                    new_pieces.append(Piece(new_start, new_length, piece.source))
+                remaining_length_to_delete -= effective_end - effective_start
+            current += piece.length
+
+        self.pieces = new_pieces
+        print(f"After deletion: {self.form_text()}")
+        print(f"Current pieces: {[str(piece) for piece in self.pieces]}")
 
 
-    def delete(self, start, length):
-        pass
+
+
+
+
 
     def form_text(self):
+        """form a text based on its pieces"""
         text = ""
         for piece in self.pieces:
             if piece.source == "original":

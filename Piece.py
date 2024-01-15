@@ -3,4 +3,6 @@ class Piece:
         self.start = start
         self.length = length
         self.source = source
-    
+
+    def __str__(self) -> str:
+        return f"Piece(start={self.start}, length={self.length}, source={self.source})"
