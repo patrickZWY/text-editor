@@ -36,6 +36,7 @@ def test_insert():
     assert multiple_pieceTable.form_text() == "So I have many friends.", "3 failed"
     multiple_pieceTable.insert(5, "don't ")
     assert multiple_pieceTable.form_text() == "So I don't have many friends.", "4 failed"
+    print("multi passed")
 
 def main():
     test_insert()
