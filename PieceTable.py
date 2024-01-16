@@ -73,6 +73,7 @@ class PieceTable:
         """Delete a text at index"""
         print(f"Before deletion: {self.form_text()}")
 
+        # save the pieces in a list
         new_pieces = []
         remaining_length_to_delete = length
         current = 0
@@ -82,21 +83,22 @@ class PieceTable:
             if remaining_length_to_delete <= 0:
                 new_pieces.append(piece)
                 continue
-            
 
             # deletion length longer than length of the piece means no deletion
             if current + piece.length < start:
                 new_pieces.append(piece)
             else:
-                # if deletion in the middle
-                # something goes wrong here because it doesn't detect split
-                # in the middle, at this point, eff_start is zero, and zero
-                # won't pass the first condition, it should be 1 to form a
-                # new piece but here it is neglected
+                # eff start should be able to target the effective start no matter
+                # it is an already modified string or unmodified
                 effective_start = max(start - current, 0)
                 effective_end = min(effective_start + remaining_length_to_delete, piece.length)
+                # deleting from beginning won't trigger this
+                # but deleting in the middle will and splits the original piece on the
+                # left side to effective_start
                 if effective_start > 0:
                     new_pieces.append(Piece(piece.start, effective_start, piece.source))
+                # applies for both deleting from beginning and middle
+                # the right side piece that has modified start and length
                 if effective_end < piece.length:
                     new_start = piece.start + effective_end
                     new_length = piece.length - effective_end
@@ -107,10 +109,6 @@ class PieceTable:
         self.pieces = new_pieces
         print(f"After deletion: {self.form_text()}")
         print(f"Current pieces: {[str(piece) for piece in self.pieces]}")
-
-
-
-
 
 
 

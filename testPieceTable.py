@@ -44,9 +44,18 @@ def test_delete():
     a_pieceTable.delete(0,1)
     assert a_pieceTable.form_text() == "eow!"
     print("beginning deleted")
+    # delete from middle
     a_pieceTable.delete(1,1)
     assert a_pieceTable.form_text() == "ew!"
     print("middle deleted")
+    # multi pieces delete
+    a_pieceTable.delete(0,1)
+    assert a_pieceTable.form_text() == "w!"
+    print("multi deleted")
+    # delete from ending
+    a_pieceTable.delete(1,1)
+    assert a_pieceTable.form_text() == "w"
+    print("ending deleted")
 
 def main():
     test_insert()
