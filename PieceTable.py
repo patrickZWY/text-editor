@@ -122,3 +122,8 @@ class PieceTable:
                 buffer = self.add_buffer
             text += buffer[piece.start : (piece.start + piece.length)]
         return text
+    
+    def load(self, text):
+        self.original_buffer = text
+        self.add_buffer = ""
+        self.pieces = [Piece(0, len(text), "original")]
