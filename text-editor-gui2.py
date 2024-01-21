@@ -28,7 +28,7 @@ def insert_text_at_cursor(character):
     # use our data structure to process it
     text_editor.insert(plain_index, character)
 
-def on_backspace_key(event):
+def on_backspace_key(_): # event parameter not used, _ as placeholder
     """backspace key deletes the word before cursor"""
     # get the current cursor index
     cursor_index = text_space.index(tk.INSERT)
@@ -43,7 +43,7 @@ def on_backspace_key(event):
     # stop the vent from continuing because we handled the deletion manually
     return "break"
 
-def on_delete_key(event):
+def on_delete_key(_): # event parameter not used, _ as placeholder
     """delete key deletes the word after cursor"""
     cursor_index = text_space.index(tk.INSERT)
     plain_index = convert_to_plain_index(cursor_index)
@@ -147,6 +147,13 @@ edit_menu.add_command(label="Search", command=search_text)
 # create a button and add it
 clear_button = tk.Button(root, text="Clear Highlights", command=clear_highlights)
 clear_button.pack()
+
+# add keyboard shortcuts
+root.bind('<Control-o>', lambda event: open_file())
+root.bind('<Control-s>', lambda event: save_file())
+root.bind('<Control-f>', lambda event: search_text())
+root.bind('<Control-q>', lambda event: root.destroy())
+root.bind('<Control-h>', lambda event: clear_highlights())
 
 text_editor = pt.PieceTable("")
 # start event loop
