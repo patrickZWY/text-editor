@@ -107,10 +107,8 @@ class PieceTable:
             current += piece.length
 
         self.pieces = new_pieces
-        print(f"After deletion: {self.form_text()}")
-        print(f"Current pieces: {[str(piece) for piece in self.pieces]}")
-
-
+        # print(f"After deletion: {self.form_text()}")
+        # print(f"Current pieces: {[str(piece) for piece in self.pieces]}")
 
     def form_text(self):
         """form a text based on its pieces"""
