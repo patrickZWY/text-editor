@@ -5,21 +5,15 @@ from tkinter import filedialog
 from tkinter import simpledialog
 from tkinter import messagebox
 
+"""
+This version uses PieceTable for special insertion and deletion
+"""
+
 root = tk.Tk()
 root.title("Mini Text Editor")
 
 text_space = tk.Text(root)
 text_space.pack(expand=True, fill=tk.BOTH)
-
-menu_bar = tk.Menu(root)
-root.config(menu=menu_bar)
-
-file_menu = tk.Menu(menu_bar, tearoff=0)
-menu_bar.add_cascade(label="File", menu=file_menu)
-file_menu.add_command(label="Open", command=open_file)
-file_menu.add_command(label="Save As...", command=save_file)
-file_menu.add_separator()
-file_menu.add_command(label="Exit", command=root.destroy)
 
 def open_file():
     path = filedialog.askopenfilename()
@@ -78,6 +72,16 @@ def load_text(text):
     text_space.insert(1.0, text)
 
 text_editor = pt.PieceTable("")
+
+menu_bar = tk.Menu(root)
+root.config(menu=menu_bar)
+
+file_menu = tk.Menu(menu_bar, tearoff=0)
+menu_bar.add_cascade(label="File", menu=file_menu)
+file_menu.add_command(label="Open", command=open_file)
+file_menu.add_command(label="Save As...", command=save_file)
+file_menu.add_separator()
+file_menu.add_command(label="Exit", command=root.destroy)
 
 menu_bar.add_command(label="Insert Text", command=insert_text)
 menu_bar.add_command(label="Delete Text", command=delete_text)
