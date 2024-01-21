@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog, simpledialog, messagebox
 import PieceTable as pt
+import re
 
 def convert_to_plain_index(tk_index):
     line, char = map(int, tk_index.split('.'))
@@ -40,12 +41,45 @@ def open_file():
             text_space.delete(1.0, tk.END)
             text_space.insert(1.0, content)
             text_editor.load(content)
+    else:
+        messagebox.showerror("Error", "File cannot open or doesn't exist.")
 
 def save_file():
     path = filedialog.asksaveasfilename()
     if path:
         with open(path, "w") as file:
             file.write(text_space.get(1.0, tk.END))
+    else:
+        messagebox.showerror("Error", "File cannot open or doesn't exist.")
+
+def search_text():
+    text_space.tag_remove("found", "1.0", tk.END)
+
+    pattern = simpledialog.askstring("Search", "Enter the search/pattern: ")
+    if pattern:
+        regex = re.compile(pattern)
+
+        start_index = "1.0"
+        while True:
+            match = regex.search(text_space.get(start_index, tk.END))
+            if not match:
+                break
+
+            start_char = match.start()
+            end_char = match.end()
+
+            start_pos = f"{start_index}+{start_char}c"
+            end_pos = f"{start_index}+{end_char}c"
+
+            text_space.tag_add("found", start_pos, end_pos)
+            # next part of the text
+            start_index = end_pos
+
+        text_space.tag_config("found", foreground="red")
+
+def clear_highlights():
+    text_space.tag_remove("found", "1.0", tk.END)
+
 
 root = tk.Tk()
 root.title("Mini Text Editor II")
@@ -66,6 +100,13 @@ file_menu.add_command(label="Open", command=open_file)
 file_menu.add_command(label="Save As...", command=save_file)
 file_menu.add_separator()
 file_menu.add_command(label="Exit", command=root.destroy)
+
+edit_menu = tk.Menu(menu_bar, tearoff=0)
+menu_bar.add_cascade(label="Edit", menu=edit_menu)
+edit_menu.add_command(label="Search", command=search_text)
+
+clear_button = tk.Button(root, text="Clear Highlights", command=clear_highlights)
+clear_button.pack()
 
 text_editor = pt.PieceTable("")
 root.mainloop()

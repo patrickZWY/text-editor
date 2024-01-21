@@ -1,5 +1,4 @@
 import PieceTable as pt
-from Piece import Piece
 
 def test_insert():
     # insert into an empty string
