@@ -1,9 +1,7 @@
 import tkinter as tk
 import PieceTable as pt
 import Piece as Piece
-from tkinter import filedialog
-from tkinter import simpledialog
-from tkinter import messagebox
+from tkinter import filedialog, simpledialog, messagebox
 
 """
 This version uses PieceTable for special insertion and deletion
