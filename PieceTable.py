@@ -71,7 +71,7 @@ class PieceTable:
 
     def delete(self, start : int, length : int):
         """Delete a text at index"""
-        print(f"Before deletion: {self.form_text()}")
+        # print(f"Before deletion: {self.form_text()}")
 
         # save the pieces in a list
         new_pieces = []
