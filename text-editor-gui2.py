@@ -3,6 +3,11 @@ from tkinter import filedialog, simpledialog, messagebox
 import PieceTable as pt
 import re
 
+"""
+This version uses Piece Table for insertion and deletion
+Has features such as delete, backspace, keyboard shortcuts managed by piece table.
+"""
+
 def convert_to_plain_index(tk_index):
     # tkinter text index is "line.char"
     line, char = map(int, tk_index.split('.'))
