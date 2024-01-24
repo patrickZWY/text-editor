@@ -22,6 +22,16 @@ def convert_to_plain_index(tk_index):
     # python strings start from zero, not one as in tkinter
     return plain_index
 
+def convert_to_tk_index(plain_index):
+    text_up_to_index = text_editor.form_text()[:plain_index]
+    line = text_up_to_index.count("\n") + 1
+    # find the index before the last newline character"
+    last_newline = text_up_to_index.rfind("\n")
+    # that index plus the newline char is 
+    # the total previous chars in previous lines
+    char = plain_index - (last_newline + 1)
+    return f"{line}.{char}"
+
 def on_key_press(event):
     # event is the info about key pressed.
     # char is the key pressed, keysym is the symbolic name of the key
@@ -29,14 +39,17 @@ def on_key_press(event):
     if event.char and event.keysym not in ["BackSpace", "Delete"]:
         # make a backup copy of the last version for restoration before insertion
         previous_editor = text_editor
+        cursor_index = text_space.index(tk.INSERT)
+        plain_index = convert_to_plain_index(cursor_index)
         insert_text_at_cursor(event.char)
 
         updated_text = text_editor.form_text()
         print(updated_text)
         text_space.delete("1.0", tk.END)
         text_space.insert("1.0", updated_text)
-
-        # text_space.mark_set(tk.INSERT, tk.END)
+        # change the cursor position to point to post-edition position
+        new_cursor_index = convert_to_tk_index(plain_index + 1)
+        text_space.mark_set(tk.INSERT, new_cursor_index)
         # prevent default insertion triggered by keypress
         return "break"
 
@@ -47,6 +60,7 @@ def insert_text_at_cursor(character):
     plain_index = convert_to_plain_index(cursor_index)
     # use our data structure to process it
     text_editor.insert(plain_index, character)
+    
 
 def on_backspace_key(_): # event parameter not used, _ as placeholder
     """backspace key deletes the word before cursor"""
@@ -65,6 +79,10 @@ def on_backspace_key(_): # event parameter not used, _ as placeholder
         print(updated_text)
         text_space.delete("1.0", tk.END)
         text_space.insert("1.0", updated_text)
+        # change cursor position to post-edition position
+        new_cursor_index = convert_to_tk_index(plain_index - 1)
+        text_space.mark_set(tk.INSERT, new_cursor_index)
+
     # stop the vent from continuing because we handled the deletion manually
     return "break"
 
@@ -81,6 +99,9 @@ def on_delete_key(_): # event parameter not used, _ as placeholder
     print(updated_text)
     text_space.delete("1.0", tk.END)
     text_space.insert("1.0", updated_text)
+    # change cursor position to post-edition position
+    new_cursor_index = convert_to_tk_index(plain_index)
+    text_space.mark_set(tk.INSERT, new_cursor_index)
     return "break"
 
 def open_file():
