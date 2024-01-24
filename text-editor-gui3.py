@@ -5,11 +5,7 @@ import re
 
 """
 This version uses Piece Table for performing insertion and deletion
-Has features such as delete, backspace, keyboard shortcuts managed by tkinter.
-NEED to fix after inserting/deleting, the cursor would go back to the end of line
-The problem is that after refreshing, the cursor is at the end of line when a new text is inserted
-The new cursor position should be at the right side of inserting/deleting
-maybe send an index back and convert it and use it to change cursor position at gui 
+Has features such as delete, backspace, keyboard shortcuts managed by tkinter. 
 """
 
 def convert_to_plain_index(tk_index):
