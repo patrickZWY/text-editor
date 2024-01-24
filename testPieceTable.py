@@ -37,6 +37,21 @@ def test_insert():
     assert multiple_pieceTable.form_text() == "So I don't have many friends.", "4 failed"
     print("multi passed")
 
+    # test insertions in order
+    ordered_pieceTable = pt.PieceTable("")
+    ordered_pieceTable.insert(0,"1")
+    assert ordered_pieceTable.form_text() == "1", "1 failed"
+    ordered_pieceTable.insert(1, "2")
+    assert ordered_pieceTable.form_text() == "12", "2 failed"
+    ordered_pieceTable.insert(2, "3")
+    assert ordered_pieceTable.form_text() == "123", "3 failed"
+    ordered_pieceTable.insert(3, "4")
+    # this somehow output 1243 instead of 1234
+    assert ordered_pieceTable.form_text() == "1234", "4 failed"
+    ordered_pieceTable.insert(4, "5")
+    assert ordered_pieceTable.form_text() == "12345", "5 failed"
+    print("ordered passed")
+
 def test_delete():
     # delete from beginning
     a_pieceTable = pt.PieceTable("Meow!")

@@ -4,8 +4,12 @@ import PieceTable as pt
 import re
 
 """
-This version uses Piece Table for storing insertion and deletion
+This version uses Piece Table for performing insertion and deletion
 Has features such as delete, backspace, keyboard shortcuts managed by tkinter.
+NEED to fix after inserting/deleting, the cursor would go back to the end of line
+The problem is that after refreshing, the cursor is at the end of line when a new text is inserted
+The new cursor position should be at the right side of inserting/deleting
+maybe send an index back and convert it and use it to change cursor position at gui 
 """
 
 def convert_to_plain_index(tk_index):
@@ -16,7 +20,7 @@ def convert_to_plain_index(tk_index):
     # that length plus the number of chars finish locating the text
     plain_index = len(content_up_to_line) + char
     # python strings start from zero, not one as in tkinter
-    return plain_index - 1
+    return plain_index
 
 def on_key_press(event):
     # event is the info about key pressed.
@@ -26,6 +30,15 @@ def on_key_press(event):
         # make a backup copy of the last version for restoration before insertion
         previous_editor = text_editor
         insert_text_at_cursor(event.char)
+
+        updated_text = text_editor.form_text()
+        print(updated_text)
+        text_space.delete("1.0", tk.END)
+        text_space.insert("1.0", updated_text)
+
+        # text_space.mark_set(tk.INSERT, tk.END)
+        # prevent default insertion triggered by keypress
+        return "break"
 
 def insert_text_at_cursor(character):
     # get the current cursor index tk.INSERT
@@ -47,8 +60,11 @@ def on_backspace_key(_): # event parameter not used, _ as placeholder
         previous_editor = text_editor
         # deletion means to start from one char before
         text_editor.delete(plain_index - 1, 1)
-        # the string calculates one char before current cursor index
-        text_space.delete("insert -1 chars", cursor_index)
+        # update text
+        updated_text = text_editor.form_text()
+        print(updated_text)
+        text_space.delete("1.0", tk.END)
+        text_space.insert("1.0", updated_text)
     # stop the vent from continuing because we handled the deletion manually
     return "break"
 
@@ -60,8 +76,11 @@ def on_delete_key(_): # event parameter not used, _ as placeholder
     previous_editor = text_editor
     # deletion starts from one char after
     text_editor.delete(plain_index, 1)
-    # the string calculates the index of char after the cursor 
-    text_space.delete(cursor_index, "insert +1 chars")
+
+    updated_text = text_editor.form_text()
+    print(updated_text)
+    text_space.delete("1.0", tk.END)
+    text_space.insert("1.0", updated_text)
     return "break"
 
 def open_file():
@@ -171,3 +190,4 @@ text_editor = pt.PieceTable("")
 previous_editor = pt.PieceTable("")
 # start event loop
 root.mainloop()
+
