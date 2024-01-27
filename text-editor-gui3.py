@@ -5,7 +5,9 @@ import re
 
 """
 This version uses Piece Table for performing insertion and deletion
-Has features such as delete, backspace, keyboard shortcuts managed by tkinter. 
+Has features such as delete, backspace, keyboard shortcuts managed by tkinter.
+redo/undo functionality, we can load a previously saved formed text pieces before modification
+and load that as the new original text
 """
 
 def convert_to_plain_index(tk_index):
@@ -33,8 +35,6 @@ def on_key_press(event):
     # char is the key pressed, keysym is the symbolic name of the key
     # insert the text if it is valid and not deleting commands
     if event.char and event.keysym not in ["BackSpace", "Delete"]:
-        # make a backup copy of the last version for restoration before insertion
-        previous_editor = text_editor
         cursor_index = text_space.index(tk.INSERT)
         plain_index = convert_to_plain_index(cursor_index)
         insert_text_at_cursor(event.char)
@@ -66,8 +66,6 @@ def on_backspace_key(_): # event parameter not used, _ as placeholder
     if cursor_index != "1.0":
         # get the python index
         plain_index = convert_to_plain_index(cursor_index)
-        # make a backup copy of the last version for restoration
-        previous_editor = text_editor
         # deletion means to start from one char before
         text_editor.delete(plain_index - 1, 1)
         # update text
@@ -86,8 +84,6 @@ def on_delete_key(_): # event parameter not used, _ as placeholder
     """delete key deletes the word after cursor"""
     cursor_index = text_space.index(tk.INSERT)
     plain_index = convert_to_plain_index(cursor_index)
-    # make a backup copy for restoration
-    previous_editor = text_editor
     # deletion starts from one char after
     text_editor.delete(plain_index, 1)
 
@@ -158,6 +154,7 @@ def search_text():
 def clear_highlights():
     text_space.tag_remove("found", "1.0", tk.END)
 
+
 # create main window
 root = tk.Tk()
 root.title("Mini Text Editor II")
@@ -203,8 +200,7 @@ root.bind('<Control-q>', lambda event: root.destroy())
 root.bind('<Control-h>', lambda event: clear_highlights())
 
 text_editor = pt.PieceTable("")
-# use another Piece Table to store the last version of our data for restoration
-previous_editor = pt.PieceTable("")
+
 # start event loop
 root.mainloop()
 
