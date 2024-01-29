@@ -6,7 +6,9 @@ import TextEditorStack as tes
 
 """
 features to implement, redo, need to handle other special keys, like control + others
+set them to doing nothing instead of inputting blank boxes
 And maybe fix undo cursor index after undoing?
+refactor and create a function for fixing cursor after editions?
 """
 
 class TextEditor:
@@ -45,6 +47,7 @@ class TextEditor:
         edit_menu = tk.Menu(menu_bar, tearoff=0)
         menu_bar.add_cascade(label="Edit", menu=edit_menu)
         edit_menu.add_command(label="Search", command=self.search_text)
+        edit_menu.add_command(label="Insert Text", command=self.text_block_insertion)
 
         clear_button = tk.Button(self.root, text="Clear Highlights", command=self.clear_highlights)
         clear_button.pack()
@@ -68,6 +71,15 @@ class TextEditor:
             current_text = self.text_space.get("1.0", tk.END)
             self.undo_stack.push(current_text)
 
+            cursor_index = self.text_space.index(tk.INSERT)
+            plain_index = self.convert_to_plain_index(cursor_index)
+            self.insert_text_at_cursor(character, plain_index)
+            return "break"
+        elif event.keysym == "Tab":
+            character = '\t'
+            current_text = self.text_space.get("1.0", tk.END)
+            self.undo_stack.push(current_text)
+            
             cursor_index = self.text_space.index(tk.INSERT)
             plain_index = self.convert_to_plain_index(cursor_index)
             self.insert_text_at_cursor(character, plain_index)
@@ -119,12 +131,17 @@ class TextEditor:
         return "break"
 
     def undo_once(self, event=None):
+        """undo once available for this version"""
+        # if there is something to undo
         if not self.undo_stack.is_empty():
+            # pop it out, store it in previous_text
             previous_text = self.undo_stack.pop()
+            # load the text back as new original
             self.text_editor.load(previous_text)
+            # refresh screen
             self.text_space.delete("1.0", tk.END)
             self.text_space.insert("1.0", previous_text)
-
+            # readjust the cursor position
             if previous_text.endswith("\n"):
                 lines = previous_text.splitlines()
                 if lines:                    
@@ -134,6 +151,31 @@ class TextEditor:
             else:
                 cursor_position = self.text_space.index(tk.INSERT)
             self.text_space.mark_set(tk.INSERT, cursor_position)
+
+    def text_block_insertion(self):
+        """
+        insert a block of text through menu
+        need to add precautions against tab and enter and return key presses
+        unicodes?
+        """
+        text_to_insert = simpledialog.askstring("Input", "Enter text to insert:")
+        # range of insertion determined by Tkinter
+        if text_to_insert is not None:
+            # save text to stack
+            current_text = self.text_space.get("1.0", tk.END)
+            self.undo_stack.push(current_text)
+            # get the index at the cursor
+            cursor_index = self.text_space.index(tk.INSERT)
+            plain_index = self.convert_to_plain_index(cursor_index)
+            # insert text to piece table then to screen
+            self.text_editor.insert(plain_index, text_to_insert)
+            updated_text = self.text_editor.form_text()
+            # refresh screen
+            self.text_space.delete("1.0", tk.END)
+            self.text_space.insert("1.0", updated_text)
+            # readjust the cursor position
+            new_cursor_index = self.convert_to_tk_index(plain_index + len(text_to_insert))
+            self.text_space.mark_set(tk.INSERT, new_cursor_index)
 
     def open_file(self, event=None):
         path = filedialog.askopenfilename()

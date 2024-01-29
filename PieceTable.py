@@ -2,7 +2,6 @@ from Piece import Piece
 
 class PieceTable:
     """A PieceTable has pieces of Piece instances, original and add buffers"""
-    """Documentation for insertion needed"""
 
     def __init__(self, text):
         self.original_buffer = text
@@ -12,31 +11,39 @@ class PieceTable:
         self.pieces = [Piece(0, len(text), "original")]
 
     def insert(self, index, text):
+        """insert a text at index"""
         add_buffer_index = len(self.add_buffer)
         self.add_buffer += text
 
         new_pieces = []
         text_inserted = False
-        current_index = 0  # Keeps track of the index within the combined text
+        # keep track of the index within the combined text
+        current_index = 0
 
         for piece in self.pieces:
             if text_inserted or current_index + piece.length < index:
-                # If text already inserted or the current piece is before the insertion point
+                # if text already inserted or the current piece is before the insertion point
+                # will still hold true if inserting at the end
                 new_pieces.append(piece)
             else:
-                # We are at the piece where insertion happens
-                # Calculate where to split this piece (if needed)
+                # we are at the piece where insertion happens
+                # calculate where to split this piece (if needed)
+                # deducting current_index from index b/c index
+                # is based on the complete text
                 split_index = index - current_index
 
-                # Add the first part of the split piece
+                # add the first part of the split piece
+                # if inserting at beginning, skip this
                 if split_index > 0:
                     new_pieces.append(Piece(piece.start, split_index, piece.source))
 
-                # Add the new piece
+                # add the new piece
+                # the added text's index starts at the appending point
                 new_pieces.append(Piece(add_buffer_index, len(text), "add"))
                 text_inserted = True
 
-                # Add the second part of the split piece (if there's any part left)
+                # add the second part of the split piece (if there's any part left)
+                # if inserting at beginning, put the whole piece back to list
                 remaining_length = piece.length - split_index
                 if remaining_length > 0:
                     new_pieces.append(Piece(piece.start + split_index, remaining_length, piece.source))
@@ -66,7 +73,8 @@ class PieceTable:
                 new_pieces.append(piece)
                 continue
 
-            # deletion length longer than length of the piece means no deletion
+            # deletion index longer than length of the piece means no deletion at present piece
+            # so add this piece back then add this length to current for tracking
             if current + piece.length < start:
                 new_pieces.append(piece)
             else:
@@ -100,6 +108,7 @@ class PieceTable:
                 buffer = self.original_buffer
             else:
                 buffer = self.add_buffer
+            # get current piece's respective length
             text += buffer[piece.start : (piece.start + piece.length)]
         return text
     
