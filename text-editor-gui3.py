@@ -6,8 +6,7 @@ import re
 """
 This version uses Piece Table for performing insertion and deletion
 Has features such as delete, backspace, keyboard shortcuts managed by tkinter.
-redo/undo functionality, we can load a previously saved formed text pieces before modification
-and load that as the new original text
+redo/undo not implemented, see TextEditor.py for a stack-based undo 
 """
 
 def convert_to_plain_index(tk_index):

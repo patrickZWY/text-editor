@@ -1,4 +1,5 @@
 class TextEditorStack:
+    """Stack class for TextEditor's undo functionality"""
     def __init__(self):
         self.items = []
 
