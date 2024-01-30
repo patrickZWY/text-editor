@@ -9,6 +9,7 @@ features to implement, redo, need to handle other special keys, like control + o
 set them to doing nothing instead of inputting blank boxes
 And maybe fix undo cursor index after undoing?
 refactor and create a function for fixing cursor after editions?
+Does not allow group deletion yet!
 """
 
 class TextEditor:
@@ -102,8 +103,9 @@ class TextEditor:
         self.text_space.mark_set(tk.INSERT, new_cursor_index)
 
     def on_backspace_key(self, event):
+        """add feature to delete single char or a group of text"""
         cursor_index = self.text_space.index(tk.INSERT)
-        if cursor_index != "1.0":
+        if cursor_index != "1.0" and not self.text_space.tag_ranges(tk.SEL):
             current_text = self.text_space.get("1.0", tk.END)
             self.undo_stack.push(current_text)
             plain_index = self.convert_to_plain_index(cursor_index)
@@ -113,9 +115,25 @@ class TextEditor:
             self.text_space.insert("1.0", updated_text)
             new_cursor_index = self.convert_to_tk_index(plain_index - 1)
             self.text_space.mark_set(tk.INSERT, new_cursor_index)
+        elif self.text_space.tag_ranges(tk.SEL):
+            current_text = self.text_space.get("1.0", tk.END)
+            self.undo_stack.push(current_text)
+            
+            start_index = self.text_space.index(tk.SEL_FIRST)
+            end_index = self.text_space.index(tk.SEL_LAST)
+            plain_start = self.convert_to_plain_index(start_index)
+            plain_end = self.convert_to_plain_index(end_index)
+            length_to_delete = plain_end - plain_start
+            self.text_editor.delete(plain_start, length_to_delete)
+            updated_text = self.text_editor.form_text()
+            self.text_space.delete("1.0", tk.END)
+            self.text_space.insert("1.0", updated_text)
+            new_cursor_index = self.convert_to_tk_index(plain_start)
+            self.text_space.mark_set(tk.INSERT, new_cursor_index)
         return "break"
 
     def on_delete_key(self, event):
+        """fix: need group deletion!"""
         cursor_index = self.text_space.index(tk.INSERT)
         
         current_text = self.text_space.get("1.0", tk.END)
