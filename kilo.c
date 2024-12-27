@@ -1,5 +1,9 @@
 /*** includes ***/
 
+#define _DEFAULT_SOURCE
+#define _BSD_SOURCE
+#define _GNU_SOURCE
+
 #include <ctype.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -7,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <sys/types.h>
 #include <errno.h>
 
 /*** defines ***/
@@ -29,10 +34,18 @@ enum editorKey {
 
 /*** data ***/
 
+typedef struct erow {
+    int size;
+    char *chars;
+} erow;
+
 struct editorConfig {
     int cx, cy;
+    int rowoff;
     int screenrows;
     int screencols;
+    int numrows;
+    erow *row;
     struct termios orig_termios;
 };
 
@@ -53,7 +66,7 @@ void die(const char *s)
 void disableRawMode()
 {
     if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &E.orig_termios) == -1)
-        die("tcsettattr");
+        die("tcsetattr");
 }
 
 void enableRawMode() 
@@ -64,7 +77,7 @@ void enableRawMode()
     struct termios raw = E.orig_termios;
     raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
     raw.c_oflag &= ~(OPOST);
-    raw.c_cflag |= ~(CS8);
+    raw.c_cflag |= (CS8);
     raw.c_lflag &= ~(ECHO | ICANON | ISIG | IEXTEN);   
     raw.c_cc[VMIN] = 0;
     raw.c_cc[VTIME] = 1;
@@ -158,6 +171,41 @@ int getWindowSize(int *rows, int *cols)
     }
 }
 
+/*** row operations ***/
+void editorAppendRow(char *s, size_t len)
+{
+    E.row = realloc(E.row, sizeof(erow) * (E.numrows + 1));
+
+    int at = E.numrows;
+    E.row[at].size = len;
+    E.row[at].chars = malloc(len + 1);
+    memcpy(E.row[at].chars, s, len);
+    E.row[at].chars[len] = '\0';
+    E.numrows++;
+ 
+}
+
+
+/*** file i/o ***/
+
+void editorOpen(char *filename)
+{
+    FILE *fp = fopen(filename, "r");
+    if (!fp) die("fopen");
+    
+    char *line = NULL;
+    size_t linecap = 0;
+    ssize_t linelen;
+    while ((linelen = getline(&line, &linecap, fp)) != -1) {
+        while (linelen > 0 && (line[linelen - 1] == '\n' ||
+                               line[linelen - 1] == '\r'))
+            linelen--;
+        editorAppendRow(line, linelen);
+   }
+    free(line);
+    fclose(fp);
+}
+
 /*** append buffer ***/
 
 struct abuf {
@@ -184,11 +232,23 @@ void abFree(struct abuf *ab)
 
 /*** output ***/
 
+void editorScroll()
+{
+    if (E.cy < E.rowoff) {
+        E.rowoff = E.cy;
+    }
+    if (E.cy >= E.rowoff + E.screenrows) {
+        E.rowoff = E.cy - E.screenrows + 1;
+    }
+}
+
 void editorDrawRows(struct abuf *ab)
 {
     int y;
     for (y = 0; y < E.screenrows; y++) {
-        if (y == E.screenrows / 3) {
+        int filerow = y + E.rowoff;
+        if (filerow >= E.numrows) {
+        if (E.numrows == 0 && y == E.screenrows / 3) {
             char welcome[80];
             int welcomelen = snprintf(welcome, sizeof(welcome), "Kilo editor -- version %s", KILO_VERSION);
             if (welcomelen > E.screencols) welcomelen = E.screencols;
@@ -202,6 +262,11 @@ void editorDrawRows(struct abuf *ab)
         } else {
             abAppend(ab, "~", 1);
         }
+        } else {
+            int len = E.row[filerow].size;
+            if (len > E.screencols) len = E.screencols;
+            abAppend(ab, E.row[filerow].chars, len);
+        }
         abAppend(ab, "\x1b[K", 3);
         if (y < E.screenrows - 1) {
             abAppend(ab, "\r\n", 2);
@@ -211,6 +276,8 @@ void editorDrawRows(struct abuf *ab)
 
 void editorRefreshScreen() 
 {
+    editorScroll();
+
     struct abuf ab = ABUF_INIT;
 
     abAppend(&ab, "\x1b[?25l", 6);
@@ -251,7 +318,7 @@ void editorMoveCursor(int key)
             }
             break;
         case ARROW_DOWN:
-    if (E.cy != E.screenrows - 1) {
+            if (E.cy < E.numrows) {
                 E.cy++;
             }
             break;
@@ -300,14 +367,21 @@ void editorProcessKeypress()
 
 void initEditor()
 {
+    E.cx = 0;
+    E.cy = 0;
+    E.rowoff = 0;
+    E.numrows = 0;
+    E.row = NULL;
     if (getWindowSize(&E.screenrows, &E.screencols) == -1) die("getWindowSize");
 }
 
-int main() {
+int main(int argc, char *argv[]) {
     enableRawMode();
     initEditor();
+    if (argc >= 2) {
+        editorOpen(argv[1]);
+    }
 
-    char c;
     while (1) {
         editorRefreshScreen();
         editorProcessKeypress();
