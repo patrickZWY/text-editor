@@ -1,3 +1,8 @@
+/***
+ * originally written by Salvatore Sanfilippo aka antirez 
+ ***/
+
+
 /*** includes ***/
 
 #define _DEFAULT_SOURCE
