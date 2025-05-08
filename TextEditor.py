@@ -7,6 +7,7 @@ import TextEditorStack as tes
 """
 Syntax highlighting?
 Indentation?
+Copy and Paste reenable?
 """
 
 class TextEditor:
@@ -99,6 +100,7 @@ class TextEditor:
             return "break"
 
     def insert_text_at_cursor(self, character, plain_index):
+        """fix: view after rerender should not be top of the file"""
         self.text_editor.insert(plain_index, character)
         updated_text = self.text_editor.form_text()
         self.text_space.delete("1.0", tk.END)
@@ -219,6 +221,7 @@ class TextEditor:
             messagebox.showerror("Error", "File Selection Failed.")
 
     def save_file(self, event=None):
+        """fix: get control back from intensive operations"""
         path = filedialog.asksaveasfilename()
         if path:
             with open(path, "w") as file:
