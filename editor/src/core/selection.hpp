@@ -4,11 +4,13 @@
 
 #include <algorithm>
 
-namespace editor {
+namespace editor
+{
 
-struct Selection {
-    ByteOffset anchor {};
-    ByteOffset cursor {};
+struct Selection
+{
+    ByteOffset anchor{};
+    ByteOffset cursor{};
 
     [[nodiscard]] ByteRange range() const noexcept
     {
@@ -17,9 +19,12 @@ struct Selection {
         return ByteRange{ByteOffset{start}, ByteLength{end - start}};
     }
 
-    [[nodiscard]] bool empty() const noexcept { return anchor == cursor; }
+    [[nodiscard]] bool empty() const noexcept
+    {
+        return anchor == cursor;
+    }
 
-    auto operator<=>(const Selection&) const = default;
+    auto operator<=>(const Selection &) const = default;
 };
 
 } // namespace editor

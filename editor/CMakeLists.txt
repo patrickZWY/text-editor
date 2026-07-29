@@ -10,6 +10,29 @@ option(EDITOR_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSa
 option(EDITOR_BUILD_FUZZERS "Build libFuzzer targets (Clang only)" OFF)
 option(EDITOR_BUILD_QT "Build the Qt Widgets editor when Qt 6 is available" ON)
 
+find_program(EDITOR_CLANG_FORMAT NAMES clang-format)
+if(EDITOR_CLANG_FORMAT)
+    file(GLOB_RECURSE EDITOR_FORMAT_SOURCES CONFIGURE_DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/fuzz/*.cpp"
+    )
+
+    add_custom_target(editor_format
+        COMMAND ${EDITOR_CLANG_FORMAT} -i ${EDITOR_FORMAT_SOURCES}
+        COMMENT "Formatting editor C++ sources"
+        VERBATIM
+    )
+    add_custom_target(editor_format_check
+        COMMAND ${EDITOR_CLANG_FORMAT} --dry-run --Werror ${EDITOR_FORMAT_SOURCES}
+        COMMENT "Checking editor C++ formatting"
+        VERBATIM
+    )
+else()
+    message(STATUS "clang-format not found; editor_format targets are unavailable")
+endif()
+
 add_library(editor_core STATIC
     src/core/piece_table.cpp
     src/core/piece_scanner.cpp

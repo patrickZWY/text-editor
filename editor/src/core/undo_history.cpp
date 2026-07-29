@@ -2,7 +2,8 @@
 
 #include "core/fail_fast.hpp"
 
-namespace editor {
+namespace editor
+{
 
 void UndoHistory::begin_transaction()
 {
@@ -13,10 +14,14 @@ void UndoHistory::begin_transaction()
 
 void UndoHistory::record(EditCommand command)
 {
-    if (transaction_active_) {
-        if (!pending_transaction_) {
+    if (transaction_active_)
+    {
+        if (!pending_transaction_)
+        {
             pending_transaction_ = std::move(command);
-        } else {
+        }
+        else
+        {
             pending_transaction_->after = std::move(command.after);
             pending_transaction_->selection_after = command.selection_after;
             pending_transaction_->kind = EditKind::replace;
@@ -29,7 +34,8 @@ void UndoHistory::record(EditCommand command)
 void UndoHistory::commit_transaction()
 {
     EDITOR_CHECK(transaction_active_, "no transaction is active");
-    if (pending_transaction_ && pending_transaction_->before.pieces != pending_transaction_->after.pieces) {
+    if (pending_transaction_ && pending_transaction_->before.pieces != pending_transaction_->after.pieces)
+    {
         append(std::move(*pending_transaction_));
     }
     pending_transaction_.reset();
@@ -62,7 +68,8 @@ bool UndoHistory::can_redo() const noexcept
 std::optional<EditCommand> UndoHistory::undo()
 {
     EDITOR_CHECK(!transaction_active_, "cannot undo while a transaction is active");
-    if (undo_.empty()) {
+    if (undo_.empty())
+    {
         return std::nullopt;
     }
     EditCommand command = std::move(undo_.back());
@@ -75,7 +82,8 @@ std::optional<EditCommand> UndoHistory::undo()
 std::optional<EditCommand> UndoHistory::redo()
 {
     EDITOR_CHECK(!transaction_active_, "cannot redo while a transaction is active");
-    if (redo_.empty()) {
+    if (redo_.empty())
+    {
         return std::nullopt;
     }
     EditCommand command = std::move(redo_.back());
@@ -87,9 +95,11 @@ std::optional<EditCommand> UndoHistory::redo()
 
 void UndoHistory::append(EditCommand command)
 {
-    if (allow_insert_coalescing_ && command.kind == EditKind::insert && !undo_.empty()) {
-        EditCommand& previous = undo_.back();
-        if (previous.kind == EditKind::insert && previous.selection_after == command.selection_before) {
+    if (allow_insert_coalescing_ && command.kind == EditKind::insert && !undo_.empty())
+    {
+        EditCommand &previous = undo_.back();
+        if (previous.kind == EditKind::insert && previous.selection_after == command.selection_before)
+        {
             previous.after = std::move(command.after);
             previous.selection_after = command.selection_after;
             redo_.clear();

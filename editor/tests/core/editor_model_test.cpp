@@ -2,7 +2,8 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-namespace {
+namespace
+{
 
 using editor::ByteOffset;
 using editor::EditorModel;
@@ -41,7 +42,7 @@ TEST_CASE("model backspace and forward delete update text and cursor")
     REQUIRE(model.document().to_string() == "bc");
 }
 
-TEST_CASE("model maintains a line index and byte-column vertical movement")
+TEST_CASE("model maintains a line index and vertical movement")
 {
     EditorModel model{"one\nlonger\ntwo"};
     REQUIRE(model.line_index().line_count() == 3);
@@ -93,6 +94,36 @@ TEST_CASE("adjacent typing coalesces into one undo step")
     REQUIRE(model.document().to_string().empty());
     model.redo();
     REQUIRE(model.document().to_string() == "hi!");
+}
+
+TEST_CASE("model navigates and deletes complete UTF-8 code points")
+{
+    EditorModel model{"a\xC3\xA9\xF0\x9F\x99\x82"
+                      "b"};
+    model.set_selection({ByteOffset{1}, ByteOffset{1}});
+
+    model.move_right(false);
+    REQUIRE(model.selection().cursor == ByteOffset{3});
+    model.move_right(false);
+    REQUIRE(model.selection().cursor == ByteOffset{7});
+
+    model.backspace();
+    REQUIRE(model.document().to_string() == "a\xC3\xA9"
+                                            "b");
+    REQUIRE(model.selection().cursor == ByteOffset{3});
+}
+
+TEST_CASE("vertical movement preserves a Unicode code point column")
+{
+    EditorModel model{"\xC3\xA9\nab\n\xF0\x9F\x99\x82"};
+    model.set_selection({ByteOffset{2}, ByteOffset{2}});
+
+    model.move_down(false);
+    REQUIRE(model.selection().cursor == ByteOffset{4});
+    model.move_down(false);
+    REQUIRE(model.selection().cursor == ByteOffset{10});
+    model.move_up(false);
+    REQUIRE(model.selection().cursor == ByteOffset{4});
 }
 
 } // namespace

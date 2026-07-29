@@ -4,7 +4,8 @@
 
 #include <cctype>
 
-namespace {
+namespace
+{
 
 using editor::ByteLength;
 using editor::ByteOffset;
@@ -59,9 +60,8 @@ TEST_CASE("scanner predicate and failed accepts preserve its cursor")
     PieceTable document{"name123"};
     PieceScanner scanner{document, range(0, document.size().value)};
 
-    const auto identifier = scanner.accept_while([](char character) {
-        return std::isalpha(static_cast<unsigned char>(character)) != 0;
-    });
+    const auto identifier =
+        scanner.accept_while([](char character) { return std::isalpha(static_cast<unsigned char>(character)) != 0; });
     REQUIRE(identifier.equals("name"));
     const auto position = scanner.position();
     REQUIRE_FALSE(scanner.accept("xyz"));

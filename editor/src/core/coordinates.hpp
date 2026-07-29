@@ -4,29 +4,34 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace editor {
+namespace editor
+{
 
-struct ByteOffset {
-    std::size_t value {};
+struct ByteOffset
+{
+    std::size_t value{};
 
-    auto operator<=>(const ByteOffset&) const = default;
+    auto operator<=>(const ByteOffset &) const = default;
 };
 
-struct ByteLength {
-    std::size_t value {};
+struct ByteLength
+{
+    std::size_t value{};
 
-    auto operator<=>(const ByteLength&) const = default;
+    auto operator<=>(const ByteLength &) const = default;
 };
 
-struct ByteRange {
-    ByteOffset start {};
-    ByteLength length {};
+struct ByteRange
+{
+    ByteOffset start{};
+    ByteLength length{};
 };
 
-struct DocumentRevision {
-    std::uint64_t value {};
+struct DocumentRevision
+{
+    std::uint64_t value{};
 
-    auto operator<=>(const DocumentRevision&) const = default;
+    auto operator<=>(const DocumentRevision &) const = default;
 };
 
 } // namespace editor

@@ -6,7 +6,8 @@
 #include <random>
 #include <string>
 
-namespace {
+namespace
+{
 
 using editor::ByteLength;
 using editor::ByteOffset;
@@ -71,29 +72,48 @@ TEST_CASE("empty edits are no-ops")
     document.validate();
 }
 
+TEST_CASE("a snapshot restores its own backing buffers into another piece table")
+{
+    PieceTable source{"first"};
+    source.insert(offset(5), " document");
+    const PieceTable::Snapshot snapshot = source.snapshot();
+
+    PieceTable destination{"second"};
+    destination.restore(snapshot);
+
+    REQUIRE(destination.to_string() == "first document");
+    destination.validate();
+}
+
 TEST_CASE("random edit sequences agree with std::string after every operation")
 {
     std::minstd_rand generator{0xC0FFEE};
     constexpr std::string_view alphabet{"abc def\\nXYZ"};
 
-    for (int sequence = 0; sequence < 250; ++sequence) {
+    for (int sequence = 0; sequence < 250; ++sequence)
+    {
         PieceTable document;
         std::string reference;
 
-        for (int operation = 0; operation < 300; ++operation) {
+        for (int operation = 0; operation < 300; ++operation)
+        {
             const bool should_insert = reference.empty() || generator() % 2 == 0;
-            if (should_insert) {
+            if (should_insert)
+            {
                 const std::size_t position = generator() % (reference.size() + 1);
                 const std::size_t length = generator() % 8;
                 std::string text;
                 text.reserve(length);
-                for (std::size_t character = 0; character < length; ++character) {
+                for (std::size_t character = 0; character < length; ++character)
+                {
                     text.push_back(alphabet[generator() % alphabet.size()]);
                 }
 
                 document.insert(offset(position), text);
                 reference.insert(position, text);
-            } else {
+            }
+            else
+            {
                 const std::size_t start = generator() % (reference.size() + 1);
                 const std::size_t length = generator() % (reference.size() - start + 1);
 

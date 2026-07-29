@@ -6,15 +6,18 @@
 #include <optional>
 #include <vector>
 
-namespace editor {
+namespace editor
+{
 
-enum class EditKind {
+enum class EditKind
+{
     insert,
     erase,
     replace,
 };
 
-struct EditCommand {
+struct EditCommand
+{
     EditKind kind;
     PieceTable::Snapshot before;
     PieceTable::Snapshot after;
@@ -22,8 +25,9 @@ struct EditCommand {
     Selection selection_after;
 };
 
-class UndoHistory {
-public:
+class UndoHistory
+{
+  public:
     void begin_transaction();
     void record(EditCommand command);
     void commit_transaction();
@@ -35,14 +39,14 @@ public:
     [[nodiscard]] std::optional<EditCommand> undo();
     [[nodiscard]] std::optional<EditCommand> redo();
 
-private:
+  private:
     void append(EditCommand command);
 
     std::vector<EditCommand> undo_;
     std::vector<EditCommand> redo_;
     std::optional<EditCommand> pending_transaction_;
-    bool transaction_active_ {};
-    bool allow_insert_coalescing_ {true};
+    bool transaction_active_{};
+    bool allow_insert_coalescing_{true};
 };
 
 } // namespace editor

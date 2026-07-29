@@ -2,12 +2,11 @@
 
 #include "core/fail_fast.hpp"
 
-namespace editor {
+namespace editor
+{
 
-PieceScanner::PieceScanner(const PieceTable& document, ByteRange permitted_range)
-    : document_(&document)
-    , permitted_range_(permitted_range)
-    , position_(permitted_range.start)
+PieceScanner::PieceScanner(const PieceTable &document, ByteRange permitted_range)
+    : document_(&document), permitted_range_(permitted_range), position_(permitted_range.start)
 {
     document_->for_each_chunk(permitted_range_, [](std::string_view) {});
 }
@@ -24,7 +23,8 @@ ByteOffset PieceScanner::position() const noexcept
 
 std::optional<char> PieceScanner::peek() const
 {
-    if (done()) {
+    if (done())
+    {
         return std::nullopt;
     }
     return character_at(position_);
@@ -32,7 +32,8 @@ std::optional<char> PieceScanner::peek() const
 
 bool PieceScanner::accept(char expected)
 {
-    if (peek() != expected) {
+    if (peek() != expected)
+    {
         return false;
     }
     ++position_.value;
@@ -42,11 +43,14 @@ bool PieceScanner::accept(char expected)
 bool PieceScanner::accept(std::string_view expected)
 {
     EDITOR_CHECK(!expected.empty(), "an empty delimiter is ambiguous");
-    if (!can_read(ByteLength{expected.size()})) {
+    if (!can_read(ByteLength{expected.size()}))
+    {
         return false;
     }
-    for (std::size_t index = 0; index < expected.size(); ++index) {
-        if (character_at(ByteOffset{position_.value + index}) != expected[index]) {
+    for (std::size_t index = 0; index < expected.size(); ++index)
+    {
+        if (character_at(ByteOffset{position_.value + index}) != expected[index])
+        {
             return false;
         }
     }
@@ -54,12 +58,14 @@ bool PieceScanner::accept(std::string_view expected)
     return true;
 }
 
-TextSpan PieceScanner::accept_while(const CharacterPredicate& predicate)
+TextSpan PieceScanner::accept_while(const CharacterPredicate &predicate)
 {
     EDITOR_CHECK(static_cast<bool>(predicate), "scanner predicate is empty");
     const ByteOffset start = position_;
-    while (const auto character = peek()) {
-        if (!predicate(*character)) {
+    while (const auto character = peek())
+    {
+        if (!predicate(*character))
+        {
             break;
         }
         ++position_.value;
@@ -70,8 +76,10 @@ TextSpan PieceScanner::accept_while(const CharacterPredicate& predicate)
 TextSpan PieceScanner::accept_until(char delimiter)
 {
     const ByteOffset start = position_;
-    while (const auto character = peek()) {
-        if (*character == delimiter) {
+    while (const auto character = peek())
+    {
+        if (*character == delimiter)
+        {
             break;
         }
         ++position_.value;
@@ -83,9 +91,11 @@ TextSpan PieceScanner::accept_until(std::string_view delimiter)
 {
     EDITOR_CHECK(!delimiter.empty(), "an empty delimiter is ambiguous");
     const ByteOffset start = position_;
-    while (!done()) {
+    while (!done())
+    {
         const ByteOffset candidate = position_;
-        if (accept(delimiter)) {
+        if (accept(delimiter))
+        {
             position_ = candidate;
             break;
         }
@@ -101,7 +111,7 @@ TextSpan PieceScanner::accept_all()
     return span_from(start);
 }
 
-PieceScanner PieceScanner::subscanner(const TextSpan& span) const
+PieceScanner PieceScanner::subscanner(const TextSpan &span) const
 {
     EDITOR_CHECK(&span.document() == document_, "subscanner span belongs to another document");
     const ByteRange range = span.range();
@@ -119,7 +129,7 @@ bool PieceScanner::can_read(ByteLength length) const noexcept
 
 char PieceScanner::character_at(ByteOffset offset) const
 {
-    return document_->copy(ByteRange{offset, ByteLength{1}}).front();
+    return document_->at(offset);
 }
 
 TextSpan PieceScanner::span_from(ByteOffset start) const

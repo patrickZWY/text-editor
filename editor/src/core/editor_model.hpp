@@ -7,14 +7,17 @@
 #include <string_view>
 #include <string>
 
-namespace editor {
+namespace editor
+{
 
-class EditorModel {
-public:
+class EditorModel
+{
+  public:
+    // The document is valid UTF-8. Selection offsets are byte offsets at Unicode code point boundaries.
     explicit EditorModel(std::string original = {});
 
-    [[nodiscard]] const PieceTable& document() const noexcept;
-    [[nodiscard]] const LineIndex& line_index() const noexcept;
+    [[nodiscard]] const PieceTable &document() const noexcept;
+    [[nodiscard]] const LineIndex &line_index() const noexcept;
     [[nodiscard]] Selection selection() const noexcept;
     [[nodiscard]] DocumentRevision revision() const noexcept;
 
@@ -34,18 +37,23 @@ public:
     void undo();
     void redo();
 
-private:
+  private:
+    [[nodiscard]] static std::string checked_utf8(std::string text);
     void replace_selection(std::string_view text, EditKind kind);
     void validate_selection(Selection selection) const;
     void move_to(ByteOffset target, bool extend_selection);
+    [[nodiscard]] ByteOffset previous_code_point(ByteOffset offset) const;
+    [[nodiscard]] ByteOffset next_code_point(ByteOffset offset) const;
+    [[nodiscard]] std::size_t code_point_column(ByteOffset offset) const;
+    [[nodiscard]] ByteOffset offset_at_column(ByteRange line, std::size_t column) const;
     void rebuild_line_index();
 
     PieceTable document_;
     UndoHistory history_;
     LineIndex line_index_;
     Selection selection_;
-    std::size_t preferred_column_ {};
-    DocumentRevision revision_ {};
+    std::size_t preferred_column_{};
+    DocumentRevision revision_{};
 };
 
 } // namespace editor

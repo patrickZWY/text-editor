@@ -7,24 +7,26 @@
 #include <QSharedPointer>
 #include <QTextLayout>
 
-namespace editor {
+namespace editor
+{
 
-class LineLayoutCache {
-public:
-    [[nodiscard]] QSharedPointer<QTextLayout> layout_for(
-        DocumentRevision revision,
-        std::size_t line,
-        const QString& text,
-        const QFont& font)
+class LineLayoutCache
+{
+  public:
+    [[nodiscard]] QSharedPointer<QTextLayout> layout_for(DocumentRevision revision, std::size_t line,
+                                                         const QString &text, const QFont &font)
     {
         const quint64 key = (revision.value * 1315423911ULL) ^ static_cast<quint64>(line);
-        if (const auto found = entries_.find(key); found != entries_.end() && found->text == text && found->font == font) {
+        if (const auto found = entries_.find(key);
+            found != entries_.end() && found->text == text && found->font == font)
+        {
             return found->layout;
         }
 
         auto layout = QSharedPointer<QTextLayout>::create(text, font);
         layout->beginLayout();
-        if (QTextLine line_layout = layout->createLine(); line_layout.isValid()) {
+        if (QTextLine line_layout = layout->createLine(); line_layout.isValid())
+        {
             line_layout.setLineWidth(1'000'000.0);
         }
         layout->endLayout();
@@ -32,10 +34,14 @@ public:
         return layout;
     }
 
-    void clear() { entries_.clear(); }
+    void clear()
+    {
+        entries_.clear();
+    }
 
-private:
-    struct Entry {
+  private:
+    struct Entry
+    {
         QString text;
         QFont font;
         QSharedPointer<QTextLayout> layout;

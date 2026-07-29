@@ -2,10 +2,11 @@
 
 #include <QTest>
 
-class EditorViewTest final : public QObject {
+class EditorViewTest final : public QObject
+{
     Q_OBJECT
 
-private slots:
+  private slots:
     void typing_and_undo_updates_the_model()
     {
         editor::EditorView view;
